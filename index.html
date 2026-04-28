@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uw Belastingbon 2025</title>
+<style>
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Page ── */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f0f0;
+  color: #111;
+  line-height: 1.6;
+}
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 5rem;
+}
+
+/* ── Page Header ── */
+.page-header { margin-bottom: 2rem; }
+
+.category-tag {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: #0070BB;
+  margin-bottom: 0.4rem;
+}
+.page-header h1 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+.pub-line {
+  font-size: 0.8rem;
+  color: #999;
+  margin-bottom: 0.9rem;
+}
+.intro {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Proper bullet list with hanging indent */
+.caveats {
+  font-size: 0.85rem;
+  color: #555;
+  border-left: 3px solid #ccc;
+  padding-left: 1rem;
+  list-style: none;
+}
+.caveats li {
+  position: relative;
+  padding-left: 1.1em;
+  margin: 0.25rem 0;
+}
+.caveats li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+}
+
+/* ── Form Card ── */
+.form-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1.5rem 1.7rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.form-card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1.2rem; }
+
+.form-row { margin-bottom: 1.1rem; }
+.form-row > label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0.3rem;
+}
+.hint {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+  line-height: 1.45;
+  margin-top: 0.35rem;
+}
+input[type="number"] {
+  width: 100%;
+  max-width: 260px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #111;
+}
+input[type="number"]:focus {
+  outline: 2px solid #0070BB;
+  outline-offset: 1px;
+  border-color: #0070BB;
+}
+
+/* Toggle switch */
+.toggle-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.1rem; }
+.toggle-row > label { font-size: 0.9rem; font-weight: 600; color: #222; cursor: pointer; user-select: none; }
+
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.slider {
+  position: absolute; inset: 0;
+  background: #ccc;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.18s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.switch input:checked + .slider { background: #0070BB; }
+.switch input:checked + .slider::before { transform: translateX(20px); }
+
+/* ── Receipt ── */
+.receipt {
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.10);
+  padding: 2.4rem 2.6rem 2.2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.93rem;
+}
+
+.receipt-title {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 0.01em;
+  margin-bottom: 1.3rem;
+}
+
+/* Centered summary lines at the top — same style as USAFacts */
+.receipt-summary {
+  text-align: center;
+  line-height: 2;
+  margin-bottom: 1.3rem;
+  font-size: 0.93rem;
+}
+.s-row { display: block; }
+.s-label { font-weight: bold; }
+.s-sep {
+  display: block;
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 0.5rem auto;
+  width: 80%;
+}
+
+.receipt-hr {
+  border: none;
+  border-top: 2px dashed #aaa;
+  margin: 1.2rem 0;
+}
+
+/*
+ * Receipt line items: flexbox per row.
+ *
+ * Layout: [label, flex-shrink:0] [dots, flex:1, overflow:hidden] [amount, fixed-width]
+ *
+ * The dots span has `overflow:hidden` + `white-space:nowrap`. Its ::after pseudo-element
+ * contains a very long string of ". " characters. Because the span has a defined width
+ * (flex:1 fills available space) and overflow is hidden, the string is clipped at the
+ * right edge of the span, giving the classic dot-leader effect.
+ *
+ * The amount column has a fixed `width` so all amounts occupy the same horizontal space
+ * and `text-align:right` pushes them flush to the right edge — this is what makes the
+ * euro digits align vertically across all rows.
+ */
+.line-item {
+  display: flex;
+  align-items: baseline;
+  margin: 0.28rem 0;
+}
+.line-item.cat .item-label  { font-weight: bold; }
+.line-item.sub .item-label  { padding-left: 2rem; font-size: 0.91em; }
+.line-item.cat .item-amount { font-weight: bold; }
+.line-item.sub .item-amount { font-size: 0.91em; }
+.line-item.grand .item-label,
+.line-item.grand .item-amount { font-weight: bold; font-size: 1em; }
+
+.item-label {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.item-dots {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 0.3rem;
+  /* vertical position: dots sit just above the text baseline */
+  align-self: flex-end;
+  margin-bottom: 0.15em;
+  min-width: 1rem;
+}
+.item-dots::after {
+  /* Long enough to fill any width up to ~1200px; clipped by overflow:hidden */
+  content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .";
+  color: #aaa;
+  font-size: 0.9em;
+}
+
+.item-amount {
+  flex-shrink: 0;
+  width: 6.5rem;          /* fixed column → digits align for all amounts */
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.receipt-spacer { height: 0.55rem; }
+
+/* Print button */
+.receipt-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.9rem;
+}
+.btn-print {
+  padding: 0.4rem 0.9rem;
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.86rem;
+  color: #555;
+  transition: background 0.15s;
+}
+.btn-print:hover { background: #f0f0f0; }
+
+/* Footer */
+.page-footer {
+  margin-top: 2.5rem;
+  font-size: 0.78rem;
+  color: #aaa;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── Print ── */
+@media print {
+  body { background: #fff; }
+  .page-header, .form-card, .receipt-actions, .page-footer { display: none !important; }
+  .receipt { border: none; box-shadow: none; padding: 0; }
+
+  /* ~10 % more compact than screen */
+  .receipt-title    { margin-bottom: 1.17rem; }
+  .receipt-summary  { line-height: 1.8; margin-bottom: 1.17rem; }
+  .receipt-hr       { margin: 1.08rem 0; }
+  .line-item        { margin: 0.25rem 0; }
+  .receipt-spacer   { height: 0.5rem; }
+}
+
+/* ── Mobile ── */
+@media (max-width: 480px) {
+  .receipt { padding: 1.5rem 1.1rem; }
+  .line-item.sub .item-label { padding-left: 1.2rem; }
+  .item-amount { width: 5.5rem; }
+}
+
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="category-tag">Overheid</div>
+    <h1>Wat betaalt u met uw belasting?</h1>
+    <p class="pub-line">Gepubliceerd <span id="hdr-year">2025</span> &middot; Bron: Rijksoverheid / CBS</p>
+    <p class="intro">
+      Vul uw gegevens in en ontvang een belastingkwitantie die laat zien hoeveel u bijdraagt
+      aan zorg, defensie, onderwijs en meer.
+      De grootste uitgavenposten van de Rijksoverheid in <span class="yr">2025</span> zijn
+      Sociale Zekerheid &amp; Arbeidsmarkt (&euro;&nbsp;114,9&nbsp;mrd),
+      Zorg &amp; Gezondheid (&euro;&nbsp;114,6&nbsp;mrd) en
+      Onderwijs, Cultuur &amp; Wetenschap (&euro;&nbsp;57&nbsp;mrd).
+      Hoeveel daarvan komt uit ú&nbsp;w belasting?
+    </p>
+    <ul class="caveats">
+      <li>Dit is een schatting op basis van Box&nbsp;1 inkomstenbelasting en optioneel Box&nbsp;3.
+          Toeslagen, aftrekposten en andere heffingen zijn niet meegenomen.</li>
+      <li>De verdeling van belastingopbrengsten over begrotingsposten is een vereenvoudiging.</li>
+      <li>Er worden geen persoonlijke gegevens opgeslagen.</li>
+      <li>Bron: Miljoenennota <span class="yr">2025</span>
+          (Prinsjesdag 17&nbsp;september&nbsp;2024),
+          Belastingdienst tarieven <span class="yr">2025</span>.</li>
+    </ul>
+  </header>
+
+  <!-- FORM -->
+  <div class="form-card">
+    <h2>Bereken uw belastingkwitantie</h2>
+
+    <div class="form-row">
+      <label for="inkomen">Bruto jaarinkomen &mdash; Box&nbsp;1 (&euro;)</label>
+      <input type="number" id="inkomen" min="0" max="10000000" step="500" placeholder="bijv. 55000">
+    </div>
+
+    <div class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="arbeid" checked>
+        <span class="slider"></span>
+      </label>
+      <label for="arbeid">Arbeidsinkomen (loon of winst uit onderneming)</label>
+    </div>
+
+    <div class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="aow">
+        <span class="slider"></span>
+      </label>
+      <label for="aow">AOW-gerechtigd (geboren v&oacute;&oacute;r <span id="aow-jaar">1960</span>)</label>
+    </div>
+
+    <div class="form-row">
+      <label for="box3">Vermogen boven vrijstelling &mdash; Box&nbsp;3 (&euro;, optioneel)</label>
+      <input type="number" id="box3" min="0" max="100000000" step="1000" placeholder="0">
+      <p class="hint">
+        Vuistregel: uw totale spaargeld + beleggingen, min &euro;&nbsp;57.000
+        (alleenstaand) of &euro;&nbsp;114.000 (fiscale partners).
+        Weet u het niet precies? Gebruik de helft van uw spaargeld als ruwe schatting.
+      </p>
+    </div>
+  </div>
+
+  <!-- RECEIPT -->
+  <div id="receipt-wrap" hidden>
+    <div class="receipt" id="receipt"><!-- ingevuld door JS --></div>
+    <div class="receipt-actions">
+      <button class="btn-print" onclick="window.print()">Afdrukken</button>
+    </div>
+  </div>
+
+  <footer class="page-footer">
+    Bron: Miljoenennota <span class="yr">2025</span> &middot;
+    Belastingdienst tarieven <span class="yr">2025</span> &middot;
+    Geen persoonlijke gegevens opgeslagen
+  </footer>
+
+</div>
+
+<script>
+'use strict';
+
+// ─── BELASTINGPARAMETERS ──────────────────────────────────────────────────────
+// Pas dit blok aan voor een nieuw belastingjaar of bij correcties.
+// Voor een nieuwe jaarversie: wijzig TAX_YEAR en pas de getallen in TAX_PARAMS aan.
+
+const TAX_YEAR = 2025;
+
+const TAX_PARAMS = {
+
+  // Box 1 — schijfgrenzen en tarieven
+  schijf1_grens:    38_441,   // € bovengrens schijf 1
+  schijf2_grens:    76_817,   // € bovengrens schijf 2
+  tarief1:           0.3582,  // schijf 1, normaal (incl. AOW/ANW/WLZ-premie)
+  tarief1_aow:       0.1732,  // schijf 1, AOW-gerechtigd (geen AOW-premie)
+  tarief2:           0.3748,  // schijf 2
+  tarief3:           0.4950,  // schijf 3 (toptarief)
+
+  // Algemene heffingskorting (AHK)
+  ahk_max:           3_362,   // € maximale korting
+  ahk_afbouw_start: 24_813,   // € inkomen waarbij afbouw begint
+  ahk_afbouw_pct:    0.06337, // afbouw per € boven ahk_afbouw_start
+  ahk_nul_boven:    78_118,   // € inkomen waarbij AHK nul is
+
+  // Arbeidskorting (AK) — vier segmenten (alleen bij arbeidsinkomen = ja)
+  //   0            → ak_seg1_top : ak_seg1_pct × inkomen
+  //   ak_seg1_top  → ak_seg2_top : ak_seg2_basis + ak_seg2_pct × (inkomen − seg1_top)
+  //   ak_seg2_top  → ak_seg3_top : ak_seg3_basis + ak_seg3_pct × (inkomen − seg2_top)
+  //   ak_seg3_top  → ak_nul_boven: ak_max − ak_afbouw_pct × (inkomen − ak_afbouw_start)
+  ak_seg1_top:      10_741,   ak_seg1_pct:   0.08231,
+  ak_seg2_top:      23_202,   ak_seg2_pct:   0.29861,  ak_seg2_basis:     884,
+  ak_seg3_top:      39_898,   ak_seg3_pct:   0.03085,  ak_seg3_basis:   4_605,
+  ak_max:            5_052,   // € maximale arbeidskorting
+  ak_afbouw_start:  39_898,   // gelijk aan ak_seg3_top
+  ak_afbouw_pct:     0.0651,  // afbouw per € boven ak_afbouw_start
+  ak_nul_boven:    124_935,   // € inkomen waarbij AK nul is
+
+  // Box 3 — vereenvoudigd forfaitair gemiddeld effectief tarief
+  //   Spaargeld:           forfaitair 1,03 % × 36 % belasting ≈ 0,37 %
+  //   Overige bezittingen: forfaitair 5,88 % × 36 % belasting ≈ 2,12 %
+  //   Gewogen gemiddelde (≈ 40 % spaargeld / 60 % overig): ≈ 1,76 %
+  box3_tarief: 0.0176,
+
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+// ─── BEGROTINGSDATA ───────────────────────────────────────────────────────────
+// Bron: Rijksbegroting 2025 (Prinsjesdag 17 sept 2024) · rijksfinancien.nl
+// Totale rijksuitgaven: € 457,0 miljard
+//
+// Pas pct-waarden aan als gecorrigeerde of nieuwe jaarcijfers beschikbaar zijn.
+// De code normaliseert de percentages automatisch naar 100 %.
+//
+// ✓ = geverifieerd via rijksfinancien.nl / data.overheid.nl
+// ⚠ = schatting op basis van Miljoenennota-bijlagen
+//
+// DEFENSIE-NOOT:
+//   4,8 % is het aandeel in de RIJKSBEGROTING (€ 22 mrd / € 457 mrd).
+//   De '2 %- of 3 %-norm' in de media is een percentage van het BBP (≈ € 1.120 mrd)
+//   — een andere maatstaf. Bij 3 % BBP zou Defensie € 33,6 mrd zijn ≈ 7,4 % van de begroting.
+
+const CATEGORIES = [
+  { name: "Sociale Zekerheid & Arbeidsmarkt", pct: 25.1, verified: true, sub: [  // ✓ € 114,9 mrd
+      { name: "AOW & nabestaanden (ANW)",  pct: 14.0 },
+      { name: "WW, WIA & bijstand",        pct:  7.8 },
+      { name: "Overige SZW",               pct:  3.3 },
+  ]},
+  { name: "Zorg & Gezondheid", pct: 25.1, verified: true, sub: [                 // ✓ € 114,6 mrd
+      { name: "Curatieve zorg (ZVW)",      pct: 16.2 },
+      { name: "Langdurige zorg (WLZ)",     pct:  6.8 },
+      { name: "Preventie & overige VWS",   pct:  2.1 },
+  ]},
+  { name: "Onderwijs, Cultuur & Wetenschap", pct: 12.5, verified: true, sub: [   // ✓ ≈ € 57 mrd
+      { name: "PO, VO & MBO",              pct:  7.0 },
+      { name: "HBO & Universiteiten",       pct:  4.2 },
+      { name: "Cultuur & Media",            pct:  1.3 },
+  ]},
+  { name: "Gemeenten & Provincies",                  pct:  9.2, verified: false }, // ⚠
+  { name: "Defensie",                                pct:  4.8, verified: true  }, // ✓ € 22,0 mrd
+  { name: "Justitie & Veiligheid",                   pct:  3.6, verified: true  }, // ✓ € 16,6 mrd
+  { name: "Infrastructuur & Waterstaat",             pct:  3.1, verified: true  }, // ✓ € 14,1 mrd
+  { name: "Financiën & Rentelasten",                 pct:  3.1, verified: false }, // ⚠
+  { name: "Economische Zaken & Klimaat",             pct:  1.8, verified: false }, // ⚠
+  { name: "Volkshuisvesting & Ruimtelijke Ordening", pct:  1.3, verified: false }, // ⚠
+  { name: "Buitenlandse handel & OS",                pct:  1.3, verified: false }, // ⚠
+  { name: "Landbouw, Natuur & Voedselkwaliteit",     pct:  0.7, verified: false }, // ⚠
+  { name: "Overige",                                 pct:  8.4, verified: false }, // ⚠ residual
+];
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Normalisatiefactor: zorgt dat totaal altijd 100 % is, ook als percentages niet precies kloppen.
+const TOTAL_PCT = CATEGORIES.reduce((s, c) => s + c.pct, 0);
+
+
+// ── Jaarafhankelijke teksten ──────────────────────────────────────────────────
+document.title = `Uw Belastingbon ${TAX_YEAR}`;
+document.getElementById('hdr-year').textContent = TAX_YEAR;
+document.querySelectorAll('.yr').forEach(el => el.textContent = TAX_YEAR);
+// AOW-leeftijd 2025 = 67 jaar
+document.getElementById('aow-jaar').textContent = TAX_YEAR - 67;
+
+
+// ── Berekeningen ──────────────────────────────────────────────────────────────
+
+function berekenAHK(inkomen) {
+  const p = TAX_PARAMS;
+  if (inkomen <= p.ahk_afbouw_start) return p.ahk_max;
+  if (inkomen >= p.ahk_nul_boven)   return 0;
+  return Math.max(0, p.ahk_max - (inkomen - p.ahk_afbouw_start) * p.ahk_afbouw_pct);
+}
+
+function berekenAK(inkomen) {
+  const p = TAX_PARAMS;
+  if (inkomen <= 0) return 0;
+  let ak;
+  if      (inkomen <= p.ak_seg1_top)  ak = p.ak_seg1_pct * inkomen;
+  else if (inkomen <= p.ak_seg2_top)  ak = p.ak_seg2_basis + p.ak_seg2_pct * (inkomen - p.ak_seg1_top);
+  else if (inkomen <= p.ak_seg3_top)  ak = p.ak_seg3_basis + p.ak_seg3_pct * (inkomen - p.ak_seg2_top);
+  else if (inkomen <= p.ak_nul_boven) ak = p.ak_max - p.ak_afbouw_pct * (inkomen - p.ak_afbouw_start);
+  else                                ak = 0;
+  return Math.max(0, Math.min(ak, p.ak_max));
+}
+
+function berekenBox1(inkomen, isArbeid, isAow) {
+  const p  = TAX_PARAMS;
+  const t1 = isAow ? p.tarief1_aow : p.tarief1;
+  let bruto;
+  if      (inkomen <= p.schijf1_grens) bruto = inkomen * t1;
+  else if (inkomen <= p.schijf2_grens) bruto = p.schijf1_grens * t1
+                                             + (inkomen - p.schijf1_grens) * p.tarief2;
+  else                                 bruto = p.schijf1_grens * t1
+                                             + (p.schijf2_grens - p.schijf1_grens) * p.tarief2
+                                             + (inkomen - p.schijf2_grens) * p.tarief3;
+  const ahk   = berekenAHK(inkomen);
+  const ak    = isArbeid ? berekenAK(inkomen) : 0;
+  const netto = Math.max(0, bruto - ahk - ak);
+  return { bruto, ahk, ak, netto };
+}
+
+function berekenBox3(vermogen) {
+  return Math.max(0, vermogen) * TAX_PARAMS.box3_tarief;
+}
+
+
+// ── Opmaak ────────────────────────────────────────────────────────────────────
+
+function eur(bedrag) {
+  return '€ ' + Math.round(Math.abs(bedrag)).toLocaleString('nl-NL');
+}
+
+function eurMin(bedrag) {
+  return '−€ ' + Math.round(Math.abs(bedrag)).toLocaleString('nl-NL');
+}
+
+function fmtPct(n) {
+  return n.toFixed(1).replace('.', ',') + '%';
+}
+
+// Bouw één receiptregel: label | dots | bedrag
+function rij(label, bedrag, cls) {
+  return `<div class="line-item ${cls}">` +
+    `<span class="item-label">${label}</span>` +
+    `<span class="item-dots"></span>` +
+    `<span class="item-amount">${eur(bedrag)}</span>` +
+    `</div>`;
+}
+
+
+// ── Renderen ──────────────────────────────────────────────────────────────────
+
+function renderReceipt(box1, box3Bel) {
+  const totaal = box1.netto + box3Bel;
+
+  // Samenvatting bovenaan (gecentreerd, zoals USAFacts)
+  let sum = `
+    <span class="s-row"><span class="s-label">Inkomstenbelasting Box&nbsp;1</span> bruto &nbsp;${eur(box1.bruto)}</span>
+    <span class="s-row">Algemene heffingskorting &nbsp;${eurMin(box1.ahk)}</span>`;
+  if (box1.ak > 0) {
+    sum += `<span class="s-row">Arbeidskorting &nbsp;${eurMin(box1.ak)}</span>`;
+  }
+  sum += `<span class="s-sep"></span>`;
+  if (box3Bel > 0) {
+    sum += `<span class="s-row"><span class="s-label">Box&nbsp;1 netto</span> &nbsp;${eur(box1.netto)}</span>`;
+    sum += `<span class="s-row">Box&nbsp;3 vermogensrendementsheffing &nbsp;${eur(box3Bel)}</span>`;
+    sum += `<span class="s-sep"></span>`;
+    sum += `<span class="s-row"><span class="s-label">Totale belasting</span> &nbsp;${eur(totaal)}</span>`;
+  } else {
+    sum += `<span class="s-row"><span class="s-label">Netto inkomstenbelasting</span> &nbsp;${eur(box1.netto)}</span>`;
+  }
+
+  // Categorieregels
+  let items = '';
+  for (const cat of CATEGORIES) {
+    const catAmt = totaal * (cat.pct / TOTAL_PCT);
+    items += rij(`${cat.name} ${fmtPct(cat.pct)}`, catAmt, 'cat');
+    if (cat.sub) {
+      for (const sub of cat.sub) {
+        items += rij(`${sub.name} ${fmtPct(sub.pct)}`, totaal * (sub.pct / TOTAL_PCT), 'sub');
+      }
+      items += `<div class="receipt-spacer"></div>`;
+    }
+  }
+
+  document.getElementById('receipt').innerHTML = `
+    <div class="receipt-title">Uw Belasting 'Kwitantie' (${TAX_YEAR})</div>
+    <div class="receipt-summary">${sum}</div>
+    <hr class="receipt-hr">
+    ${items}
+    <hr class="receipt-hr">
+    ${rij('Totaal', totaal, 'grand')}`;
+}
+
+
+// ── Live update (debounced) ───────────────────────────────────────────────────
+
+let timer;
+function update() {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const inkomen  = Math.max(0, parseFloat(document.getElementById('inkomen').value) || 0);
+    const isArbeid = document.getElementById('arbeid').checked;
+    const isAow    = document.getElementById('aow').checked;
+    const vermogen = Math.max(0, parseFloat(document.getElementById('box3').value)  || 0);
+
+    const box1    = berekenBox1(inkomen, isArbeid, isAow);
+    const box3Bel = berekenBox3(vermogen);
+    const totaal  = box1.netto + box3Bel;
+
+    const wrap = document.getElementById('receipt-wrap');
+    if (totaal > 0) {
+      renderReceipt(box1, box3Bel);
+      wrap.hidden = false;
+    } else {
+      wrap.hidden = true;
+    }
+  }, 150);
+}
+
+document.getElementById('inkomen').addEventListener('input', update);
+document.getElementById('box3').addEventListener('input', update);
+document.getElementById('arbeid').addEventListener('change', update);
+document.getElementById('aow').addEventListener('change', update);
+</script>
+</body>
+</html>
